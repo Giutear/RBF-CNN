@@ -73,15 +73,8 @@ class ConvolutionLayer():
                 plt.imshow(Image.fromarray((filteredImage[i,:,:,:] * 255).astype(np.uint8)))
     
     def backProp(self):
-        #TODO
-        return 0
+        print("TODO backProp")
         
-        
-        
-              
-    def backProp(self):
-        print("TBI backProp")
-        self.poolingIndices = []
         
     def __maxPooling(self, inputImage):
         pooledImage = np.zeros((int(inputImage.shape[0] / 2), int(inputImage.shape[1] / 2), inputImage.shape[2], self.n_kernels), dtype = int)
