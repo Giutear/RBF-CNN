@@ -3,26 +3,19 @@ import pandas as pd
 import math
 from PIL import Image
 from matplotlib import pyplot as plt
-from RBF import RBF_Kernel as rbf
+from RBF import RBF_Kernel as RBF
 
 
 class RBF_Convolution():
 
-    def __init__(self, numFilters, numLabels, stride = 1, width = 0, height = 0, channels = 0, debug = False):
+    def __init__(self, numFilters, stride = 1, debug = False):
         self.debug = debug
-        #Here the RBFs which will label the input are stored
-        self.labelRBFs = []
-        for i in range(0, numLabels):
-            self.labelRBFs.append( RBF_Kernel(center = np.zeros( int( (width - 3) / stride + 1 ) * int( (height - 3) / stride + 1 ) * channels * numFilters )) )
         #Here the RBFs which filter the image are stored
         self.RBFFilters = []
         for i in range(0, numFilters):
-            self.RBFFilters.append(RBF_Kernel())
+            self.RBFFilters.append(RBF())
         #The stride defines how far a filter will move between calculations
         self.stride = stride
-        self.width = width
-        self.height = height
-        self.channels = channels
 
         
     def forwardPass(self, inputImage):
@@ -35,7 +28,7 @@ class RBF_Convolution():
             for i in range(filteredImage.shape[1]):
                 for j in range(filteredImage.shape[2]): 
                     for c in range(filteredImage.shape[3]):
-                        #Set the center of the rbf to the colour of the central pixel
+                        #Set the center of the RBF to the colour of the central pixel
                         self.RBFFilters[k].c = np.full(1, inputImage[self.stride * i + 1][self.stride * j + 1][c])
                         #Calculate the filtered colour
                         filteredImage[k][i][j][c] -= self.RBFFilters[k].activate(np.full(1, inputImage[self.stride * i][self.stride * j][c]))
@@ -54,20 +47,8 @@ class RBF_Convolution():
                             filteredImage[k][i][j][c] = 1.0
         #Flatten the image into a single vector  
         flattenedImage = filteredImage.flatten()              
-        #After the convolution we do the classification using a fully connected layer of RBFs
-        self.sum = 0
-        for i in range(len(self.labelRBFs)):
-            self.sum += self.labelRBFs[i].activate(flattenedImage)
-        #Lastly we calculate the probability by dividing the label by the sum of the result for all labels
-        self.probabilities = []
-        for i in range(len(self.labelRBFs)):
-            probabilities.append(self.labelRBFs[i].lastActivation / self.sum)
         #Print some information if debugging was enabled
         if(self.debug):
-            print("Filtered shape:")
-            print(filteredImage.shape)
-            for i in range(len(self.labelRBFs)):
-                print( "Probability Label " +  str(i) + ": " + str(probabilities[i]) )
             fig = plt.figure()
             plt.imshow(Image.fromarray(inputImage))
             for i in range(filteredImage.shape[0]):
@@ -81,19 +62,12 @@ class RBF_Convolution():
         self.__backPropSoftMax(correctLabelIndex, derivative)
         if(self.debug):
             print("Error: " + str(error))
-            print("Derivative for error: " + str(derivative))
-    
-    def __backPropSoftMax(self, correctLabelIndex, deriv):
-        derivative = (self.sum - self.labelRBFs[correctLabelIndex].lastActivation) / ( self.sum * self.sum )
-        self.__backPropLabel(deriv * derivative)
-        if(self.debug):
-            print("Derivative for softmax: " + str(derivative))
-            
-    def __backPropLabel(self, deriv):
-        
-        
+            print("Derivative for error: " + str(derivative))  
         
     def __maxPooling(self, inputImage):
+    '''
+    An optional maxPooling function which I currently don't plan on using
+    '''
         pooledImage = np.zeros((int(inputImage.shape[0] / 2), int(inputImage.shape[1] / 2), inputImage.shape[2], self.n_kernels), dtype = int)
         for i in range(pooledImage.shape[0]):
             for j in range(pooledImage.shape[1]):

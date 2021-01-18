@@ -1,3 +1,5 @@
+import numpy as np
+
 class RBF_Neuron():
     def __init__(self, center = np.full(1, 0), radius = 0.5, constBias = 0.02, weight = 1.0, trainRate = 1.0):
         self.c = center
