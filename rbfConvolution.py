@@ -8,7 +8,7 @@ from RBF import RBF_Kernel as RBF
 
 class RBF_Convolution():
 
-    def __init__(self, numFilters, stride = 1, debug = False):
+    def __init__(self, numFilters, stride = 1, trainRate = 1.0, debug = False):
         self.debug = debug
         #Here the RBFs which filter the image are stored
         self.RBFFilters = []
@@ -16,14 +16,17 @@ class RBF_Convolution():
             self.RBFFilters.append(RBF())
         #The stride defines how far a filter will move between calculations
         self.stride = stride
+        self.tR = trainRate
 
         
     def forwardPass(self, inputImage):
         '''
         During a forward pass, the filters will run over the input image and produce their outputs
+        inputImage should be a numpy array
+        Returns a vector which represents the images position in feature space
         '''
         filteredImage = np.ones(( len(self.RBFFilters),  int(((inputImage.shape[0] - 3) / self.stride) + 1), int(((inputImage.shape[1] - 3) / self.stride) + 1), inputImage.shape[2] ))
-        # Iterate over all filters, colours and pixels in tat order
+        #Iterate over all filters, pixels and colours in that order
         for k in range(filteredImage.shape[0]):
             for i in range(filteredImage.shape[1]):
                 for j in range(filteredImage.shape[2]): 
@@ -44,9 +47,7 @@ class RBF_Convolution():
                         if(filteredImage[k][i][j][c] < 0.0):
                             filteredImage[k][i][j][c] = 0.0
                         elif(filteredImage[k][i][j][c] > 1.0):
-                            filteredImage[k][i][j][c] = 1.0
-        #Flatten the image into a single vector  
-        flattenedImage = filteredImage.flatten()              
+                            filteredImage[k][i][j][c] = 1.0            
         #Print some information if debugging was enabled
         if(self.debug):
             fig = plt.figure()
@@ -54,20 +55,20 @@ class RBF_Convolution():
             for i in range(filteredImage.shape[0]):
                 fig = plt.figure()
                 plt.imshow(Image.fromarray((filteredImage[i,:,:,:] * 255).astype(np.uint8)))
+        #Flatten the image into a single vector and return it
+        return filteredImage.flatten()  
     
-    def backProp(self, correctLabelIndex):
-        #Calculate the error function
-        error = -np.log(self.probabilities[correctLabelIndex])
-        derivative = - 1 / error
-        self.__backPropSoftMax(correctLabelIndex, derivative)
-        if(self.debug):
-            print("Error: " + str(error))
-            print("Derivative for error: " + str(derivative))  
+    def backProp(self, derivative = 1):
+        '''
+        The derivative should be the value of the derivative from the previous layer
+        The function will return it's own derivative after adpating it's parameters
+        '''
+        print("TODO backProp RBF_Convolution") 
         
     def __maxPooling(self, inputImage):
-    '''
-    An optional maxPooling function which I currently don't plan on using
-    '''
+        '''
+        An optional maxPooling function which I currently don't plan on using
+        '''
         pooledImage = np.zeros((int(inputImage.shape[0] / 2), int(inputImage.shape[1] / 2), inputImage.shape[2], self.n_kernels), dtype = int)
         for i in range(pooledImage.shape[0]):
             for j in range(pooledImage.shape[1]):
