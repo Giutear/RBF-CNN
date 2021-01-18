@@ -3,25 +3,27 @@ import pandas as pd
 import math
 from PIL import Image
 from matplotlib import pyplot as plt
+from RBF import RBF_Kernel as rbf
 
 
-class ConvolutionLayer():
+class RBF_Convolution():
 
     def __init__(self, numFilters, numLabels, stride = 1, width = 0, height = 0, channels = 0, debug = False):
         self.debug = debug
         #Here the RBFs which will label the input are stored
         self.labelRBFs = []
         for i in range(0, numLabels):
-            self.labelRBFs.append( RFB_Kernel(center = np.zeros( int( (width - 3) / stride + 1 ) * int( (height - 3) / stride + 1 ) * channels * numFilters )) )
+            self.labelRBFs.append( RBF_Kernel(center = np.zeros( int( (width - 3) / stride + 1 ) * int( (height - 3) / stride + 1 ) * channels * numFilters )) )
         #Here the RBFs which filter the image are stored
         self.RBFFilters = []
         for i in range(0, numFilters):
-            self.RBFFilters.append(RFB_Kernel())
+            self.RBFFilters.append(RBF_Kernel())
         #The stride defines how far a filter will move between calculations
         self.stride = stride
         self.width = width
         self.height = height
-        self.channels = channels       
+        self.channels = channels
+
         
     def forwardPass(self, inputImage):
         '''
@@ -53,13 +55,13 @@ class ConvolutionLayer():
         #Flatten the image into a single vector  
         flattenedImage = filteredImage.flatten()              
         #After the convolution we do the classification using a fully connected layer of RBFs
-        s = 0
+        self.sum = 0
         for i in range(len(self.labelRBFs)):
-            s += self.labelRBFs[i].activate(flattenedImage)
+            self.sum += self.labelRBFs[i].activate(flattenedImage)
         #Lastly we calculate the probability by dividing the label by the sum of the result for all labels
-        probabilities = []
+        self.probabilities = []
         for i in range(len(self.labelRBFs)):
-            probabilities.append(self.labelRBFs[i].lastActivation / s)
+            probabilities.append(self.labelRBFs[i].lastActivation / self.sum)
         #Print some information if debugging was enabled
         if(self.debug):
             print("Filtered shape:")
@@ -72,8 +74,23 @@ class ConvolutionLayer():
                 fig = plt.figure()
                 plt.imshow(Image.fromarray((filteredImage[i,:,:,:] * 255).astype(np.uint8)))
     
-    def backProp(self):
-        print("TODO backProp")
+    def backProp(self, correctLabelIndex):
+        #Calculate the error function
+        error = -np.log(self.probabilities[correctLabelIndex])
+        derivative = - 1 / error
+        self.__backPropSoftMax(correctLabelIndex, derivative)
+        if(self.debug):
+            print("Error: " + str(error))
+            print("Derivative for error: " + str(derivative))
+    
+    def __backPropSoftMax(self, correctLabelIndex, deriv):
+        derivative = (self.sum - self.labelRBFs[correctLabelIndex].lastActivation) / ( self.sum * self.sum )
+        self.__backPropLabel(deriv * derivative)
+        if(self.debug):
+            print("Derivative for softmax: " + str(derivative))
+            
+    def __backPropLabel(self, deriv):
+        
         
         
     def __maxPooling(self, inputImage):
@@ -97,32 +114,6 @@ class ConvolutionLayer():
                 print("Pooled image shape:")
                 print(pooledImage.shape)
         return pooledImage
-        
-    def __iterate_regions(self, image):
-        '''
-        Generates all possible 3x3 image regions using valid padding.
-        - image is a 2d numpy array
-        '''
-        for i in range(image.shape[0] - 2):
-            for j in range(image.shape[1] - 2):
-                for k in range(image.shape[2]):
-                    im_region = image[i:(i + 3), j:(j + 3), k]
-                    yield im_region, i, j, k
+       
                     
-        
-class RFB_Kernel():
-    def __init__(self, center = np.full(1, 0), radius = 0.5, constBias = 0.02, weight = 1.0):
-        self.c = center
-        self.r = radius
-        self.cB = constBias
-        self.w = weight
-    
-    def activate(self, x):
-        assert x.shape == self.c.shape, "x" + str(x.shape) + " and center " + str(self.c.shape) + " do not have the same dimension"
-        s = np.double(0)
-        for i in range(x.shape[0]):
-            s += np.double(x[i] - self.c[i]) * np.double(x[i] - self.c[i])
-        self.lastActivation = self.w * np.double( math.exp( (-s) / (2 * (self.r * self.r)) ) ) - self.cB
-        return self.lastActivation
-        
         
