@@ -13,7 +13,7 @@ class RBF_Convolution():
         #Here the RBFs which filter the image are stored
         self.RBFFilters = []
         for i in range(0, numFilters):
-            self.RBFFilters.append(RBF())
+            self.RBFFilters.append(RBF(trainRate = trainRate))
         #The stride defines how far a filter will move between calculations
         self.stride = stride
         self.tR = trainRate
