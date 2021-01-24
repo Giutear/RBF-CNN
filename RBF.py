@@ -29,25 +29,25 @@ class RBF_Neuron():
         buffer = self.cB
         #Adapt the center positions
         for i in range(self.c.shape[0]):
-            self.c[i] += self.tR * derivative * (self.lastActivation + self.cB) * (self.c[i] - x[i]) / (self.r * self.r)
+            self.c[i] -= self.tR * derivative * (self.lastActivation + self.cB) * (self.c[i] - x[i]) / (self.r * self.r)
         #Adapt the constant bias
-        self.cB -= self.tR * derivative
+        self.cB += self.tR * derivative
         #Adapt the neurons weight
-        self.w += self.tR * derivative * (self.lastActivation + buffer) / self.w
+        self.w -= self.tR * derivative * (self.lastActivation + buffer) / self.w
         #adapt the radius
-        self.r += self.tR * derivative * (self.lastActivation + buffer) * (self.s / (self.r * self.r * self.r))
+        self.r -= self.tR * derivative * (self.lastActivation + buffer) * (self.s / (self.r * self.r * self.r))
         #Return the error for the next layer
         dev = []
         for i in range(self.c.shape[0]):
-            dev.append(derivative * (self.lastActivation + buffer) * (self.c[i] - x[i]) / (self.r * self.r))
-            
+            dev.append(derivative * (self.lastActivation + buffer) * (self.c[i] - x[i]) / (self.r * self.r))           
         return dev
+
         
 class RBF_Kernel(RBF_Neuron):
 
-    def backProp(self, x, derivative = 1.0):
+    def backProp(self, image, derivative = 1.0):
         '''
-        x should be the last input that was used to activate the neuron
+        image should be the image that was originaly filtered.
         derivative should be the derivative of the previous layer
         The reason this function is overwritten is becase for the kernel, the center positions don't need to be adapted
         '''
@@ -55,10 +55,10 @@ class RBF_Kernel(RBF_Neuron):
         #Since the value of cB changes during this function, we buffer it to store the old value for adaption of other parameters
         buffer = self.cB
         #Adapt the constant bias
-        self.cB -= self.tR * derivative
+        self.cB += self.tR * derivative
         #Adapt the neurons weight
-        self.w += self.tR * derivative * (self.lastActivation + buffer) / self.w
+        self.w -= self.tR * derivative * (self.lastActivation + buffer) / self.w
         #adapt the radius
-        self.r += self.tR * derivative * (self.lastActivation + buffer) * (self.s / (self.r * self.r * self.r))
+        self.r -= self.tR * derivative * (self.lastActivation + buffer) * (self.s / (self.r * self.r * self.r))
         #Return the error for the next layer
         return derivative * (self.lastActivation + buffer) * (self.c[0] - x[0]) / (self.r * self.r)
