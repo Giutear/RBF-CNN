@@ -64,8 +64,12 @@ class RBF_Convolution():
         '''
         The derivative should be the value of the derivative from the previous layer
         The function will return it's own derivative after adpating it's parameters
+        For now this function is only usable at the input layer which means no further back propagation is possible, hence no return value
         '''
-        
+        for k in range(self.filteredImage.shape[0]):
+            for i in range(self.filteredImage.shape[1]):
+                for j in range(self.filteredImage.shape[2]):
+                    self.RBFFilters[k][i][j].backProp(input[i,j,0], -derivative)
         
     def __maxPooling(self, inputImage):
         '''
