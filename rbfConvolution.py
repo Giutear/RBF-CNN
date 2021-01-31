@@ -60,7 +60,7 @@ class RBF_Convolution():
                 plt.imshow(Image.fromarray((normImage[i,:,:,:] * 255).astype(np.uint8)))
         return self.filteredImage
     
-    def backProp(self, input, derivative = 1):
+    def backProp(self, input, derivative):
         '''
         The derivative should be the value of the derivative from the previous layer
         The function will return it's own derivative after adpating it's parameters
@@ -69,7 +69,7 @@ class RBF_Convolution():
         for k in range(self.filteredImage.shape[0]):
             for i in range(self.filteredImage.shape[1]):
                 for j in range(self.filteredImage.shape[2]):
-                    self.RBFFilters[k][i][j].backProp(input[i,j,0], -derivative)
+                    self.RBFFilters[k][i][j].backProp(input[i,j,0], -derivative[k][i][j])
         
     def __maxPooling(self, inputImage):
         '''

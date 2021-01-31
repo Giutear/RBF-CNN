@@ -20,8 +20,5 @@ class RBF_Label_Layer():
         return self.val
         
         
-    def backProp(self, input, derivative = 1.0):
-        deriv = []
-        for i in range(len(self.labelNeurons)):
-            deriv.append(self.labelNeurons.backProp(input, derivative))
-        return deriv
+    def backProp(self, input, derivative, winnerIndex):
+        return self.labelNeurons[winnerIndex].backProp(input, derivative)
