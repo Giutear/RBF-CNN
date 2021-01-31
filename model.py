@@ -14,7 +14,6 @@ class Model():
         
     def trainModel(self, trainingImages, labels):
         for i in range(trainingImages.shape[0]):
-            clear_output()
             print("Training..." + str(i))
             self.forwardPass(trainingImages[i, :, :])
             self.backProp(trainingImages[i,:,:], int(labels[i]))

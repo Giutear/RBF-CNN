@@ -19,7 +19,7 @@ class RBF_Convolution():
             for i in range(filterWidth):
                 self.RBFFilters[k].append([])
                 for j in range(filterHeight):
-                    self.RBFFilters[k][i].append(RBF(trainRate = trainRate))
+                    self.RBFFilters[k][i].append(RBF(trainRate = trainRate, constBias = 0.02))
         #The stride defines how far a filter will move between calculations
         self.stride = stride
         self.tR = trainRate
@@ -65,11 +65,6 @@ class RBF_Convolution():
         The function will return it's own derivative after adpating it's parameters
         For now this function is only usable at the input layer which means no further back propagation is possible, hence no return value
         '''
-        print(len(derivative))
-        print(self.filteredImage.shape[0])
-        print(self.filteredImage.shape[1])
-        print(self.filteredImage.shape[2])
-        
         for k in range(self.filteredImage.shape[0]):
             for i in range(self.filteredImage.shape[1]):
                 for j in range(self.filteredImage.shape[2]):

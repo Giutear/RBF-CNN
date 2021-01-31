@@ -3,7 +3,7 @@ import math
 
 class RBF_Neuron():
 
-    def __init__(self, center = np.full(1, 0), radius = 0.5, constBias = 0.02, weight = 1.0, trainRate = 1.0):
+    def __init__(self, center = np.full(1, 0), radius = 0.5, constBias = 0.0, weight = 1.0, trainRate = 1.0):
         self.c = center
         self.r = radius
         self.cB = constBias
@@ -26,20 +26,17 @@ class RBF_Neuron():
         '''
         assert x.shape == self.c.shape, "x" + str(x.shape) + " and center " + str(self.c.shape) + " do not have the same dimension for backProp"
         #Since the value of cB changes during this function, we buffer it to store the old value for adaption of other parameters
-        buffer = self.cB
         #Adapt the center positions
         for i in range(self.c.shape[0]):
-            self.c[i] -= self.tR * derivative * (self.lastActivation + self.cB) * (self.c[i] - x[i]) / (self.r * self.r)
-        #Adapt the constant bias
-        self.cB += self.tR * derivative
+            self.c[i] -= self.tR * derivative * (self.lastActivation) * (self.c[i] - x[i]) / (self.r * self.r)
         #Adapt the neurons weight
-        self.w -= self.tR * derivative * (self.lastActivation + buffer) / self.w
+        self.w -= self.tR * derivative * (self.lastActivation) / self.w
         #adapt the radius
-        self.r -= self.tR * derivative * (self.lastActivation + buffer) * (self.s / (self.r * self.r * self.r))
+        self.r -= self.tR * derivative * (self.lastActivation) * (self.s / (self.r * self.r * self.r))
         #Return the error for the next layer
         dev = []
         for i in range(self.c.shape[0]):
-            dev.append(derivative * (self.lastActivation + buffer) * (self.c[i] - x[i]) / (self.r * self.r))           
+            dev.append(derivative * (self.lastActivation) * (self.c[i] - x[i]) / (self.r * self.r))           
         return dev
 
         
