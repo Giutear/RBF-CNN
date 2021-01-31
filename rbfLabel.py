@@ -16,7 +16,7 @@ class RBF_Label_Layer():
     def forwardPass(self, input):
         self.val = []
         for i in range(len(self.labelNeurons)):
-            self.val.append(self.labelNeurons.activate(input))
+            self.val.append((self.labelNeurons[i]).activate( (input.flatten()) ))
         return self.val
         
         

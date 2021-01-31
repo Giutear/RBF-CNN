@@ -45,7 +45,7 @@ class RBF_Neuron():
         
 class RBF_Kernel(RBF_Neuron):
 
-    def backProp(self, image, derivative = 1.0):
+    def backProp(self, x, derivative = 1.0):
         '''
         image should be the image that was originaly filtered.
         derivative should be the derivative of the previous layer

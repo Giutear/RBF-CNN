@@ -31,24 +31,23 @@ class RBF_Convolution():
         inputImage should be a numpy array
         Returns a vector which represents the images position in feature space
         '''
-        self.filteredImage = np.ones(( len(self.RBFFilters),  len(self.RBFFilters[0]), len(self.RBFFilters[0][0]), inputImage.shape[2] ))
+        self.filteredImage = np.ones(( len(self.RBFFilters),  len(self.RBFFilters[0]), len(self.RBFFilters[0][0]) ))
         #Iterate over all filters, pixels and colours in that order
         for k in range(self.filteredImage.shape[0]):
             for i in range(self.filteredImage.shape[1]):
-                for j in range(self.filteredImage.shape[2]): 
-                    for c in range(self.filteredImage.shape[3]):
-                        #Set the center of the RBF to the colour of the central pixel
-                        self.RBFFilters[k][i][j].c = np.full(1, inputImage[self.stride * i + 1][self.stride * j + 1][c])
-                        #Calculate the filtered colour
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i][self.stride * j][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i][self.stride * j + 1][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i][self.stride * j + 2][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 1][self.stride * j][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 1][self.stride * j + 1][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 1][self.stride * j + 2][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 2][self.stride * j][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 2][self.stride * j + 1][c]))
-                        self.filteredImage[k][i][j][c] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 2][self.stride * j + 2][c]))
+                for j in range(self.filteredImage.shape[2]):
+                    #Set the center of the RBF to the colour of the central pixel
+                    self.RBFFilters[k][i][j].c = np.full(1, inputImage[self.stride * i + 1][self.stride * j + 1])
+                    #Calculate the filtered colour
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i][self.stride * j]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i][self.stride * j + 1]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i][self.stride * j + 2]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 1][self.stride * j]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 1][self.stride * j + 1]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 1][self.stride * j + 2]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 2][self.stride * j]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 2][self.stride * j + 1]))
+                    self.filteredImage[k][i][j] -= self.RBFFilters[k][i][j].activate(np.full(1, inputImage[self.stride * i + 2][self.stride * j + 2]))
         #Print some information if debugging was enabled
         if(self.debug):
             fig = plt.figure()
@@ -66,10 +65,15 @@ class RBF_Convolution():
         The function will return it's own derivative after adpating it's parameters
         For now this function is only usable at the input layer which means no further back propagation is possible, hence no return value
         '''
+        print(len(derivative))
+        print(self.filteredImage.shape[0])
+        print(self.filteredImage.shape[1])
+        print(self.filteredImage.shape[2])
+        
         for k in range(self.filteredImage.shape[0]):
             for i in range(self.filteredImage.shape[1]):
                 for j in range(self.filteredImage.shape[2]):
-                    self.RBFFilters[k][i][j].backProp(input[i,j,0], -derivative[k][i][j])
+                    self.RBFFilters[k][i][j].backProp(np.full(1, input[i,j]), -derivative[k + i * self.filteredImage.shape[0] + j * self.filteredImage.shape[0] * self.filteredImage.shape[1]])
         
     def __maxPooling(self, inputImage):
         '''
