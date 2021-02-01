@@ -56,7 +56,8 @@ class RBF_Convolution():
             normImage = np.clip(self.filteredImage, 0.0, 1.0)
             for i in range(normImage.shape[0]):
                 fig = plt.figure()
-                plt.imshow(Image.fromarray((normImage[i,:,:,:] * 255).astype(np.uint8)))
+                plt.imshow(Image.fromarray((normImage[i,:,:] * 255).astype(np.uint8)))
+            plt.show()
         return self.filteredImage
     
     def backProp(self, input, derivative):
@@ -69,31 +70,3 @@ class RBF_Convolution():
             for i in range(self.filteredImage.shape[1]):
                 for j in range(self.filteredImage.shape[2]):
                     self.RBFFilters[k][i][j].backProp(np.full(1, input[i,j]), -derivative[k + i * self.filteredImage.shape[0] + j * self.filteredImage.shape[0] * self.filteredImage.shape[1]])
-        
-    def __maxPooling(self, inputImage):
-        '''
-        An optional maxPooling function which I currently don't plan on using
-        '''
-        pooledImage = np.zeros((int(inputImage.shape[0] / 2), int(inputImage.shape[1] / 2), inputImage.shape[2], self.n_kernels), dtype = int)
-        for i in range(pooledImage.shape[0]):
-            for j in range(pooledImage.shape[1]):
-                for k in range(pooledImage.shape[2]):
-                    for l in range(pooledImage.shape[3]):
-                        j0 = 2 * j
-                        i0 = np.argmax(inputImage[2 * i : 2 * i + 1, 2 * j, k, l])
-                        i1 = np.argmax(inputImage[2 * i : 2 * i + 1,2 * j + 1, k, l])
-                        if inputImage[2 * i + i0][2 * j][k][l] < inputImage[2 * i + i1][2 * j + 1][k][l]:
-                            i0 = i1
-                            j0 += 1
-                        self.poolingIndices.append((2 * i + i0, j0))
-                        pooledImage[i][j][k][l] = inputImage[i0][j0][k][l]
-        if self.debug:
-            for i in range(0, self.n_kernels):
-                fig = plt.figure()
-                plt.imshow(pooledImage[0:,0:,0:,i])
-                print("Pooled image shape:")
-                print(pooledImage.shape)
-        return pooledImage
-       
-                    
-        
