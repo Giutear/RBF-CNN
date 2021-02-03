@@ -2,13 +2,16 @@ import numpy as np
 import math
 from rbfConvolution import RBF_Convolution as convolution
 from rbfLabel import RBF_Label_Layer as labelLayer
-from IPython.display import clear_output
 
 class Model():
 
     def __init__(self, imageWidth, imageHeight, numLabels, numKernels, trainRate, debug = False):
         self.con = convolution(imageWidth = imageWidth, imageHeight = imageHeight, numFilters = numKernels, trainRate = trainRate, debug=debug)
         self.labels = labelLayer(numLabels = numLabels, dims = ((imageHeight - 2) * (imageWidth - 2) * numKernels), trainRate = trainRate)
+        self.numLabels = numLabels
+        self.numKernels = numKernels
+        self.imageWidth = imageWidth
+        self.imageHeight = imageHeight
         self.debug = debug
         print("Init model")
         
@@ -31,8 +34,10 @@ class Model():
     def forwardPass(self, input):
         print("ForwardPass model")
         self.filteredImage = self.con.forwardPass(input)
-        self.vals = self.labels.forwardPass(self.filteredImage)
-        self.s = sum(math.exp(self.vals))
+        self.vals = self.labels.forwardPass(self.filteredImage.flatten())
+        self.s = 0
+        for i in range(len(self.vals)):
+            self.s += math.exp(self.vals[i])
         self.prob = []
         for i in range( len(self.vals) ):
             self.prob.append(math.exp(self.vals[i]) / self.s)
@@ -47,7 +52,7 @@ class Model():
         #Calculate the derivative
         eDeriv = self.prob[correctLabel] - 1
         lDiv = self.labels.backProp(input = self.filteredImage.flatten(), derivative = eDeriv, winnerIndex = correctLabel)
-        self.con.backProp(input = input, derivative = lDiv)
+        self.con.backProp(input = input, derivative = np.reshape(lDiv,newshape=(self.numKernels, self.imageWidth - 2, self.imageHeight - 2)))
         print("Done backProp model")
         
         
