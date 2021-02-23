@@ -43,8 +43,10 @@ class RBF_Neuron():
         
 class RBF_Kernel():
 
-    def __init__(self, radius):
+    def __init__(self, radius, weight, bias):
         self.r = radius
+        self.weight = weight
+        self.bias = bias
 
     def activate(self, x):
         assert x.shape == (3,3), "x does not have the right shape for a RBF_Kernel. x.shape: " + str(x.shape) + "."
