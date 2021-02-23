@@ -7,7 +7,7 @@ class RBF_Neuron():
         self.c = center
         self.r = radius
         self.tR = trainRate
-        #We store the last inputs and activations in order for batch learning to be possible. If backProp is called, these lists will be consumed and reset for the next batch
+        #We store the last input, activation and sum to save processing time during the back propagation
         self.lastInput = 0
         self.lastActivation = 0
         self.s = 0
