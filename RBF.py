@@ -6,44 +6,40 @@ class RBF_Neuron():
     def __init__(self, center = np.full(1, 0), radius = 0.5, constBias = 0.02, weight = 1.0, trainRate = 1.0):
         self.c = center
         self.r = radius
-        self.cB = constBias
-        self.w = weight
         self.tR = trainRate
+        #We store the last inputs and activations in order for batch learning to be possible. If backProp is called, these lists will be consumed and reset for the next batch
+        self.lastInput = 0
+        self.lastActivation = 0
+        self.s = 0
     
     def activate(self, x):
         x = x.astype(np.float)
         assert x.shape == self.c.shape, "x" + str(x.shape) + " and center " + str(self.c.shape) + " do not have the same dimension"
-        self.s = np.double(0)
-        self.lastActivation = np.double(1)
-        for i in range(x.shape[0]):
-            b = (x[i] - self.c[i]) * (x[i] - self.c[i])
-            self.s += b
-            self.lastActivation *= math.exp( (-b) / (2 * (self.r * self.r)) )
-        if self.lastActivation < math.exp(-self.s/(2 * self.r * self.r)):
-            self.lastActivation =math.exp(-self.s/(2 * self.r * self.r))
-        self.lastActivation = self.w * self.lastActivation - self.cB
+        self.lastInput = x
+        #Calculate ||x-c||^2
+        self.s = x - self.c
+        self.s = np.dot(s, s)
+        #calculate exp(-s*r)
+        self.lastActivation = np.exp(-self.s[-1] * self.r)
+        #Return the last activation
         return self.lastActivation
         
-    def backProp(self, x, derivative = 1.0):
+    def backProp(self, derivative = 1.0):
         '''
-        x should be the last input that was used to activate the neuron
         derivative should be the derivative of the previous layer
         '''
-        assert x.shape == self.c.shape, "x" + str(x.shape) + " and center " + str(self.c.shape) + " do not have the same dimension for backProp"
-         #Calculate the error for the next layer
-        dev = []
-        for i in range(self.c.shape[0]):
-            dev.append(-derivative * (self.lastActivation + self.cB) * (x[i] - self.c[i]) / (self.r * self.r)) 
-        #Adapt the center positions
-        for i in range(self.c.shape[0]):
-            self.c[i] -= self.tR * derivative * (self.lastActivation + self.cB) * (self.c[i] - x[i]) / (self.r * self.r)
-        #Adapt the neurons weight
-        self.w -= self.tR * derivative * (self.lastActivation + self.cB) / self.w
-        #adapt the radius
-        self.r -= self.tR * derivative * (self.lastActivation + self.cB) * (self.s / (self.r * self.r * self.r))
-        #adapt bias
-        self.cB += self.tR * derivative       
-        return dev
+        #calculate the delta for r
+        dr = -self.tR * derivative * self.lastActivation * self.s
+        #Calculate the delta for c and x
+        dc = np.fill(self.c.shape, self.lastActivation)
+        dx = np.fill(self.c.shape, self.lastActivation)
+        for i in range(dc.shape[0]):
+            dc[i] *= 2 * self.r * (self.lastInput[i] - self.c[i])
+            dx[i] *= -2 * self.r * (self.lastInput[i] - self.c[i])
+        #adapt the parameters
+        self.r += dr
+        self.c += dc
+        return dx
 
         
 class RBF_Kernel(RBF_Neuron):
