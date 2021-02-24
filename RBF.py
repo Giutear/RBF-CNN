@@ -28,7 +28,7 @@ class RBF_Neuron():
         derivative should be the derivative of the previous layer
         '''
         #calculate the delta for r
-        dr = -self.tR * derivative * self.lastActivation * self.s
+        dr = -self.lastActivation * self.s
         #Calculate the delta for c and x
         dc = np.fill(self.c.shape, self.lastActivation)
         dx = np.fill(self.c.shape, self.lastActivation)
@@ -36,9 +36,9 @@ class RBF_Neuron():
             dc[i] *= 2 * self.r * (self.lastInput[i] - self.c[i])
             dx[i] *= -2 * self.r * (self.lastInput[i] - self.c[i])
         #adapt the parameters
-        self.r += dr
-        self.c += dc
-        return dx
+        self.r += self.tR * derivative * dr
+        self.c += self.tR * derivative * dc
+        return dx * derivative
 
         
 class RBF_Kernel():

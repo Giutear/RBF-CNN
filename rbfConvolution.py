@@ -22,11 +22,14 @@ class RBF_Convolution():
         inputImage should be a numpy array
         Returns a vector which represents the images position in feature space
         '''
+        self.lastInput = inputImage
         self.fImage = np.zeros( (len(self.filters), inputImage.shape) )
+        self.sImage = np.zeros( (len(self.filters), inputImage.shape) )
         for reg, i, j in self.createRegions(inputImage, 1):
             for k in range(len(self.filters)):
                 tImage = self.filters[k].activate(reg)
-                self.fImage[k,i,j] = 1 - self.filters[k].weight * np.sum(tImage) + self.filters[k].bias
+                self.sImage[k,i,j] = np.sum(tImage)
+        self.fImage = 1 - self.filters[k].weight * self.sImage + self.filters[k].bias
         return self.fImage
 
     def backProp(self, derivative):
@@ -35,6 +38,8 @@ class RBF_Convolution():
         The function will return it's own derivative after adpating it's parameters
         For now this function is only usable at the input layer which means no further back propagation is possible, hence no return value
         '''
+        db = 1
+        dx = np.zeros(self.lastInput.shape)
         
     def createRegions(self, x, stride):
         '''
