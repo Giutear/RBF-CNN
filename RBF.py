@@ -42,7 +42,9 @@ class RBF_Neuron():
 
         
 class RBF_Kernel():
-
+    '''
+    The RBF_Kernel doesn't have any backprop function since this is handled by the rbfConvolution class
+    '''
     def __init__(self, radius, weight, bias):
         self.r = radius
         self.weight = weight

@@ -23,8 +23,8 @@ class RBF_Convolution():
         Returns a vector which represents the images position in feature space
         '''
         self.lastInput = inputImage
-        self.fImage = np.zeros( (len(self.filters), inputImage.shape) )
-        self.sImage = np.zeros( (len(self.filters), inputImage.shape) )
+        self.fImage = np.zeros( (len(self.filters), inputImage.shape - 2) )
+        self.sImage = np.zeros( (len(self.filters), inputImage.shape - 2) )
         for reg, i, j in self.createRegions(inputImage, 1):
             for k in range(len(self.filters)):
                 tImage = self.filters[k].activate(reg)
@@ -43,7 +43,7 @@ class RBF_Convolution():
         
     def createRegions(self, x, stride):
         '''
-        This functions yields all 3x3 subimages of the argument x
+        This functions yields all 3x3 subimages of the argument x with given stride in between
         '''
         for i in range( (x.shape[0] - 3 + stride) / stride ):
             for j in range( (x.shape[1] - 3 + stride) / stride ):
