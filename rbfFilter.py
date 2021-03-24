@@ -10,15 +10,16 @@ class RBF_Filter():
         self.radius = float(radius)
         self.width = iWidth
         self.height = iHeight
+        self.needsUpdate = True
 
     def __rbf(self, x, c):
-        return np.exp( -np.dot((x - c), (x - c)) / self.radius )
+        return np.exp( -np.dot( (x-c), (x-c) ) / self.radius )
     
-    def firstForwad(self, image):
+    def firstForwad(self, initialImage):
         '''
         In the first forward pass the filter is simply initialized as the image
         '''
-        assert image.shape == (self.width, self.height), "Image does not have the right dimensions for filtering."
+        assert initialImage.shape == (self.width, self.height), "Image does not have the right dimensions for filtering."
         if not hasattr(self, 'weights'):
             #Find the least squares such that Hx=b
             H = np.zeros([self.width * self.width, self.height * self.height])
@@ -34,33 +35,41 @@ class RBF_Filter():
                 for j in range(i, self.height * self.height):
                     H[i,j] = self.__rbf(self.center[:,i], self.center[:,j])
                     H[j,i] = H[i,j]
-            self.weights = np.linalg.solve(H, image.flatten())
+            self.weights = np.linalg.solve(H, initialImage.flatten())
             self.weights = self.weights.reshape(self.width, self.height)
-            self.filteredImage = np.zeros([self.width, self.height])
-            for i in range(self.width):
-                for j in range(self.height):
-                    for w in range(self.width):
-                        for v in range(self.height):
-                            self.filteredImage[i,j] += self.weights[w,v] * self.__rbf(self.center[:,(i*j)], self.center[:,(w*v)])
+            self.forwardPass()
             if self.debug:
                 X,Y = np.meshgrid(self.center[1,:self.width], self.center[1,:self.height])
                 fig = plt.figure()
                 ax = fig.add_subplot(111, projection='3d')
-                ax.plot_wireframe (X,Y,Z=image)
+                ax.plot_wireframe (X,Y,Z=initialImage)
                 fig = plt.figure()
-                ax = fig.add_subplot(111, projection='3d')
-                ax.plot_wireframe (X,Y,Z=self.filteredImage)
-                fig = plt.figure()
-                plt.imshow(image)
-                fig = plt.figure()
-                plt.imshow(self.filteredImage)
+                plt.imshow(initialImage)
                 plt.show()
         else:
             print("Weights has already been defined.")
 
 
-    def forwardPass(self, image):
-        print("TODO forwardPass")
+    def forwardPass(self):
+        if hasattr(self, 'weights'):
+            if(self.needsUpdate):
+                self.filteredImage = np.zeros([self.width, self.height])
+                for i in range(self.width):
+                    for j in range(self.height):
+                        for w in range(self.width):
+                            for v in range(self.height):
+                                self.filteredImage[i,j] += self.weights[w,v] * self.__rbf(self.center[:,(i*j)], self.center[:,(w*v)])
+            if self.debug:
+                X,Y = np.meshgrid(self.center[1,:self.width], self.center[1,:self.height])
+                fig = plt.figure()
+                ax = fig.add_subplot(111, projection='3d')
+                ax.plot_wireframe (X,Y,Z=self.filteredImage)
+                fig = plt.figure()
+                plt.imshow(self.filteredImage)
+                plt.show()
+            return self.filteredImage
+        else:
+            print("The RBF Filter has not been initialized using firstForward")
 
     def backProp(self, derivative = 1.0):
         print("TODO backProp")

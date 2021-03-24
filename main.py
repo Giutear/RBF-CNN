@@ -11,7 +11,5 @@ for i in range(images.shape[0]):
     trainImages[i] = images[i].reshape((28,28))
     
 
-#m = model.Model(imageWidth = 28, imageHeight = 28, numLabels = 10, numKernels = 1, trainRate = 1.0, debug = False)
-#m.trainModel(trainImages, labels)
-fil = r.RBF_Filter(28,28,0.001,True)
-fil.firstForwad(trainImages[3,:,:])
+m = model.Model(imageWidth = 28, imageHeight = 28, numLabels = 10, numKernels = 1, trainRate = 1.0, debug = False)
+m.trainModel(trainImages, labels)
